@@ -17,3 +17,4 @@ Project.csproj
 .idea
 /bin
 firebase-key.json
+/firestore-key.json
