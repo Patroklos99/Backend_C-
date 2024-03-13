@@ -7,3 +7,8 @@
 *.props
 /obj/Debug/net8.0/staticwebassets.build.json
 /localhost.pfx
+/certificate.pfx
+/localhost.conf
+/localhost.crt
+/localhost.key
+/temperatures/
