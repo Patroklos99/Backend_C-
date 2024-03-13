@@ -1,0 +1,8 @@
+*.dll
+/bin/Debug/net8.0/System.Linq.Async.dll
+*.xml
+*.info
+*.pdb
+*.cache
+*.props
+/obj/Debug/net8.0/staticwebassets.build.json
