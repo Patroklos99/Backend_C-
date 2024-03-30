@@ -1,36 +1,43 @@
+using Google.Cloud.Firestore;
+
 namespace Project.auth.firestorerepository;
 
+[FirestoreData]
 public class FirestoreUserAccount {
-    private readonly string _encodedPassword;
-
-    private readonly string _username;
-
     public FirestoreUserAccount(string username, string encodedPassword)
     {
-        _username = username;
-        _encodedPassword = encodedPassword;
+        username = username;
+        encodedPassword = encodedPassword;
     }
+
+    public FirestoreUserAccount()
+    {
+    }
+
+    [FirestoreProperty("username")] public string username { get; set; }
+
+    [FirestoreProperty("encodedPassword")] public string _encodedPassword { get; set; }
 
     public override bool Equals(object obj)
     {
         if (obj == null || obj.GetType() != GetType()) return false;
         var other = (FirestoreUserAccount)obj;
-        return _username == other._username && _encodedPassword == other._encodedPassword;
+        return username == other.username && _encodedPassword == other._encodedPassword;
     }
 
     public override int GetHashCode()
     {
-        return HashCode.Combine(_username, _encodedPassword);
+        return HashCode.Combine(username, _encodedPassword);
     }
 
     public override string ToString()
     {
-        return $"FirestoreUserAccount{{username='{_username}', encodedPassword='{_encodedPassword}'}}";
+        return $"FirestoreUserAccount{{username='{username}', encodedPassword='{_encodedPassword}'}}";
     }
 
     public string getUsername()
     {
-        return _username;
+        return username;
     }
 
     public string getEncodedPassword()

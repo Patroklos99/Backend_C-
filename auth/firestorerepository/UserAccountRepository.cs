@@ -14,7 +14,8 @@ public class UserAccountRepository {
     {
         var docRef = _firestore.Collection(CollectionName).Document(username);
         var snapshot = await docRef.GetSnapshotAsync();
-        if (snapshot.Exists) return snapshot.ConvertTo<FirestoreUserAccount>();
+        if (snapshot.Exists)
+            return snapshot.ConvertTo<FirestoreUserAccount>();
         return null;
     }
 

@@ -1,6 +1,8 @@
 using Google.Cloud.Firestore;
 using Google.Cloud.Storage.V1;
+using Google.Protobuf.WellKnownTypes;
 using Project.messages.model;
+using Timestamp = Google.Cloud.Firestore.Timestamp;
 
 // Adjust namespace based on your actual model namespace
 
@@ -15,7 +17,7 @@ public class MessageRepository {
     {
         var result = new List<Message>();
         var collectionRef = firestore.Collection(CollectionName);
-        var query = collectionRef.OrderBy("timestamp").Limit(20);
+        var query = collectionRef.OrderBy("timestamp").LimitToLast(20);
 
         if (!string.IsNullOrEmpty(fromId))
         {
@@ -26,13 +28,14 @@ public class MessageRepository {
         }
 
         var querySnapshot = await query.GetSnapshotAsync();
-        foreach (var documentSnapshot in querySnapshot.Documents)
-        {
+        foreach (var documentSnapshot in querySnapshot.Documents) {
             var firestoreMessage = documentSnapshot.ConvertTo<FirestoreMessage>();
             if (firestoreMessage != null)
             {
-                var message = new Message(documentSnapshot.Id, firestoreMessage.Username,
-                    firestoreMessage.Timestamp.ToDateTime().Ticks, firestoreMessage.Text, firestoreMessage.ImageUrl);
+                long unixmillisecs = (firestoreMessage.timestamp.ToDateTime().Ticks / TimeSpan.TicksPerMillisecond) -
+                                     new DateTime(1970, 1, 1).Ticks / TimeSpan.TicksPerMillisecond;
+                Message message = new Message(documentSnapshot.Id, firestoreMessage.username, unixmillisecs,
+                    firestoreMessage.text, firestoreMessage.imageUrl);
                 result.Add(message);
             }
         }
@@ -46,7 +49,7 @@ public class MessageRepository {
         var collectionRef = firestore.Collection(CollectionName);
         var docRef = collectionRef.Document();
 
-        if (string.IsNullOrWhiteSpace(messageRequest.imageData.data))
+        if (messageRequest.imageData != null)
         {
             var storageClient = StorageClient.Create();
             var bucket = storageClient.GetBucket(BucketName);
@@ -67,7 +70,7 @@ public class MessageRepository {
         );
 
         await docRef.SetAsync(firestoreMessage);
-        return new Message(docRef.Id, messageRequest.text, firestoreMessage.Timestamp.ToDateTime().Ticks,
+        return new Message(docRef.Id, messageRequest.text, firestoreMessage.timestamp.ToDateTime().Ticks,
             messageRequest.text, imageUrl);
     }
 }

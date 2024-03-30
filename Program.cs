@@ -1,8 +1,9 @@
 using FirebaseAdmin;
 using Google.Apis.Auth.OAuth2;
+using Project.auth.filter;
 using Project.auth.session;
 using Project.messages.repository;
-using Project.temperatures.model;
+using Project.WebSocket;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,8 +14,7 @@ builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
         {
-            // policy.AllowAnyOrigin()
-            policy.WithOrigins("http://localhost:4200", "https://localhost:4200", "http://localhost:8080")
+            policy.AllowAnyOrigin()
                 .AllowAnyMethod()
                 .AllowAnyHeader();
             // .AllowCredentials();
@@ -22,10 +22,10 @@ builder.Services.AddCors(options =>
     );
 });
 
-// FirebaseApp.Create();
 ConfigurerServices(builder.Services);
 var app = builder.Build();
 ConfigurerPipeline();
+app.Run();
 
 void ConfigurerServices(IServiceCollection builderServices)
 {
@@ -35,15 +35,19 @@ void ConfigurerServices(IServiceCollection builderServices)
     builderServices.AddScoped<SessionDataAccessor>();
     builderServices.AddScoped<MessageRepository>();
     builderServices.AddSingleton<SessionManager>();
+    builder.Services.AddScoped<SimplePasswordHasher>();
+    builder.Services.AddScoped<UserAccountRepository>();
     builderServices.AddSignalR();
 }
 
 void ConfigurerPipeline()
 {
-    // app.UseHttpsRedirection(); // Middleware for HTTPS redirection
-    app.UseRouting(); // Routing
+    app.UseHttpsRedirection(); // Middleware for HTTPS redirection
     app.UseCors(); // Apply CORS
-    // app.UseMiddleware<AuthFilter>(); // AuthFilter
+    app.UseRouting(); // Routing
+    app.UseMiddleware<AuthFilter>(); // AuthFilter
+    app.UseAuthorization(); // Authorization
+    app.UseAuthentication();
 
     // Development-specific configurations
     if (app.Environment.IsDevelopment())
@@ -51,10 +55,8 @@ void ConfigurerPipeline()
         app.UseSwagger();
         app.UseSwaggerUI();
     }
-
-    app.UseAuthorization(); // Authorization
     app.MapControllers(); // Map controllers
-    // app.MapHub<WebSocketManagerHandler>("/notifications");
+    app.MapHub<WebSocketManagerHandler>("/notifications");
 }
 
 
@@ -69,7 +71,7 @@ void ConfigurerServicesSwagger(IServiceCollection services)
 void InitializeFirebase()
 {
     var projectId = "chat-project-d5a0e";
-    string projectd = Environment.GetEnvironmentVariable("GOOGLE_CLOUD_PROJECT");
+    var projectd = Environment.GetEnvironmentVariable("GOOGLE_CLOUD_PROJECT");
     var serviceAccountKeyPath = "/home/kaped/RiderProjects/Project/firebase-key.json";
     if (File.Exists(serviceAccountKeyPath))
     {

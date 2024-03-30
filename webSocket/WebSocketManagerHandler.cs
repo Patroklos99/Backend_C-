@@ -12,11 +12,11 @@ public class WebSocketManagerHandler : Hub {
     public override async Task OnDisconnectedAsync(Exception exception)
     {
         // Custom logic when a client disconnects
-        await OnDisconnectedAsync(exception);
+        await base.OnDisconnectedAsync(exception);
     }
 
-    public async Task SendMessageToAll(string message)
-    {
-        await Clients.All.SendAsync("notif", message);
-    }
+    // public async Task SendMessageToAll(string message)
+    // {
+    //     await Clients.All.SendAsync("notif", message);
+    // }
 }

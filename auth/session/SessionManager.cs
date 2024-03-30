@@ -1,5 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using Google.Apis.Auth;
 using Microsoft.IdentityModel.Tokens;
 using Project.session;
 
@@ -11,7 +12,7 @@ public class SessionManager {
 
     public SessionManager()
     {
-        _secretKey = new SymmetricSecurityKey(Convert.FromBase64String("YourBase64SecretHere"));
+        _secretKey = new SymmetricSecurityKey(Convert.FromBase64String("kJnK5cUpwHs68jzVRTs9JW7x5pNj9zSRY+AG4y/OkcM="));
     }
 
     public string AddSession(SessionData authData)
@@ -41,26 +42,36 @@ public class SessionManager {
 
     public SessionData GetSession(string sessionId)
     {
-        var tokenHandler = new JwtSecurityTokenHandler();
         try
         {
-            tokenHandler.ValidateToken(sessionId, new TokenValidationParameters
-            {
-                ValidateIssuerSigningKey = true,
-                IssuerSigningKey = _secretKey,
-                ValidateIssuer = false,
-                ValidateAudience = false,
-                ClockSkew = TimeSpan.Zero
-            }, out var validatedToken);
+            var jwtSecurityToken = new JwtSecurityTokenHandler().ReadJwtToken(sessionId);
+            var username = jwtSecurityToken.Subject;
 
-            var jwtToken = (JwtSecurityToken)validatedToken;
-            var username = jwtToken.Claims.First(claim => claim.Type == ClaimTypes.Name).Value;
-
+            // var token = jwtParser.ReadJwtToken(sessionId);
+            // var username = token.Subject;
             return new SessionData(username);
         }
-        catch
+        catch (InvalidJwtException e)
         {
             return null;
         }
+        // var tokenHandler = new JwtSecurityTokenHandler();
+        // try {
+        //     tokenHandler.ValidateToken(sessionId, new TokenValidationParameters {
+        //         ValidateIssuerSigningKey = true,
+        //         IssuerSigningKey = _secretKey,
+        //         ValidateIssuer = false,
+        //         ValidateAudience = false,
+        //         ClockSkew = TimeSpan.Zero
+        //     }, out var validatedToken);
+        //
+        //     var jwtToken = (JwtSecurityToken)validatedToken;
+        //     var username = jwtToken.Claims.First(claim => claim.Type == ClaimTypes.Name).Value;
+        //
+        //     return new SessionData(username);
+        // }
+        // catch {
+        //     return null;
+        // }
     }
 }

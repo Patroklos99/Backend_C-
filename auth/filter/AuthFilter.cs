@@ -1,3 +1,5 @@
+using System.Runtime.CompilerServices;
+using Google.Api;
 using Project.auth.session;
 
 namespace Project.auth.filter;
@@ -20,6 +22,7 @@ public class AuthFilter {
             return;
         }
 
+        // var authHeader = httpContext.Request.Headers["Authorization"].FirstOrDefault();
         var authHeader = context.Request.Headers["Authorization"].FirstOrDefault();
         if (authHeader == null || !authHeader.StartsWith(BEARER))
         {

@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Project.auth.firestorerepository;
 using Project.auth.model;
@@ -13,20 +12,23 @@ namespace Project.auth;
  * Implémente ServletContextAware pour recevoir le contexte de la requête HTTP.
  */
 [ApiController]
-[Route("[controller]")]
+// [Route("auth/")]
 // [EnableCors("AllowAllHeaders")] // Apply the CORS policy
 public class AuthController : Controller {
-    private readonly PasswordHasher<string> _passwordHasher;
     private readonly SessionDataAccessor _sessionDataAccessor;
+
     private readonly SessionManager _sessionManager;
+
+    // private readonly PasswordHasher<IdentityUser> _passwordHasher;
+    private readonly SimplePasswordHasher _simplePasswordHasher;
     private readonly UserAccountRepository _userAccountRepository;
 
     public AuthController(SessionManager sessionManager, SessionDataAccessor sessionDataAccessor,
-        PasswordHasher<string> passwordHasher, UserAccountRepository userAccountRepository)
+        SimplePasswordHasher passwordHasher, UserAccountRepository userAccountRepository)
     {
         _sessionManager = sessionManager;
         _sessionDataAccessor = sessionDataAccessor;
-        _passwordHasher = passwordHasher;
+        _simplePasswordHasher = passwordHasher;
         _userAccountRepository = userAccountRepository;
     }
 
@@ -37,21 +39,22 @@ public class AuthController : Controller {
         try
         {
             var client = await _userAccountRepository.GetUserAccountAsync(loginRequest.username);
+            // IdentityUser user = new IdentityUser { UserName = loginRequest.username };
             if (client != null)
             {
-                if (_passwordHasher.VerifyHashedPassword(loginRequest.username, client.getEncodedPassword(),
-                        loginRequest.password) == PasswordVerificationResult.Success)
+                // if (_passwordHasher.VerifyHashedPassword(user, client.getEncodedPassword(),
+                if (_simplePasswordHasher.VerifyPassword(client.getEncodedPassword(), loginRequest.password))
                 {
-                    var sessionData = new SessionData(client.getEncodedPassword());
+                    var sessionData = new SessionData(client.getUsername());
                     var token = _sessionManager.AddSession(sessionData);
                     return Ok(new LoginResponse(token));
                 }
-
                 return Forbid();
             }
 
             _userAccountRepository.SetUserAccountAsync(new FirestoreUserAccount(loginRequest.username,
-                _passwordHasher.HashPassword(loginRequest.username, loginRequest.password)));
+                _simplePasswordHasher.HashPassword(loginRequest.password)));
+            // _passwordHasher.HashPassword(user, loginRequest.password)));
             var newSessionData = new SessionData(loginRequest.username);
             var newToken = _sessionManager.AddSession(newSessionData);
             return Ok(new LoginResponse(newToken));
