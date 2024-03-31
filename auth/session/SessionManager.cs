@@ -55,23 +55,5 @@ public class SessionManager {
         {
             return null;
         }
-        // var tokenHandler = new JwtSecurityTokenHandler();
-        // try {
-        //     tokenHandler.ValidateToken(sessionId, new TokenValidationParameters {
-        //         ValidateIssuerSigningKey = true,
-        //         IssuerSigningKey = _secretKey,
-        //         ValidateIssuer = false,
-        //         ValidateAudience = false,
-        //         ClockSkew = TimeSpan.Zero
-        //     }, out var validatedToken);
-        //
-        //     var jwtToken = (JwtSecurityToken)validatedToken;
-        //     var username = jwtToken.Claims.First(claim => claim.Type == ClaimTypes.Name).Value;
-        //
-        //     return new SessionData(username);
-        // }
-        // catch {
-        //     return null;
-        // }
     }
 }

@@ -27,25 +27,5 @@ public class SimplePasswordHasher {
     public bool VerifyPassword(string savedPasswordHash, string passwordToCheck)
     {
         return BCrypt.Net.BCrypt.Verify(passwordToCheck, savedPasswordHash);
-        // // Extract bytes
-        // byte[] hashBytes = Convert.FromBase64String(savedPasswordHash);
-        //
-        // // Get salt
-        // byte[] salt = new byte[16];
-        // Array.Copy(hashBytes, 0, salt, 0, 16);
-        //
-        // // Compute the hash on the password the user entered
-        // var pbkdf2 = new Rfc2898DeriveBytes(passwordToCheck, salt, 10000);
-        // byte[] hash = pbkdf2.GetBytes(20);
-        //
-        // // Compare the results
-        // for (int i=0; i < 20; i++)
-        // {
-        //     if (hashBytes[i+16] != hash[i])
-        //     {
-        //         return false;
-        //     }
-        // }
-        // return true;
     }
 }
